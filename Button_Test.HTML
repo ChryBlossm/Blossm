@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Counter Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to bottom, #ff9a8b, #ffc3a0);
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding-bottom: 50px;
+            overflow: hidden; /* Prevent page scroll */
+        }
+
+        #score, #coins, #rebirths {
+            font-size: 24px;
+            margin: 10px;
+            color: #333;
+        }
+
+        #scoreIncrement {
+            font-size: 30px;
+            color: #ffec3d;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .button, .upgradeButton, .guideButton, .themesButton {
+            background-color: #ff8c00; /* Default orange */
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .button:hover, .upgradeButton:hover, .guideButton:hover, .themesButton:hover {
+            background-color: #e07a00;
+            transform: translateY(-4px);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add shadow on hover */
+        }
+
+        .button:active, .upgradeButton:active, .guideButton:active, .themesButton:active {
+            transform: translateY(2px);
+        }
+
+        .button:focus, .upgradeButton:focus, .guideButton:focus, .themesButton:focus {
+            outline: none;
+        }
+
+        #upgradesButton, #themesButton {
+            background-color: #ff8c00; /* Orange Upgrade button */
+            position: absolute;
+            right: 20px;
+            z-index: 10;
+            border-radius: 30px;
+        }
+
+        #upgradesButton {
+            top: 20px;
+        }
+
+        #themesButton {
+            top: 120px; /* Positioned below upgrades button */
+        }
+
+        #clickersGuideButton {
+            background-color: #ff8c00; /* Orange Clicker's Guide button */
+            position: absolute;
+            right: 20px;
+            top: 70px;
+            z-index: 10;
+            border-radius: 30px;
+        }
+
+        #upgradesButton:hover, #clickersGuideButton:hover, #themesButton:hover {
+            background-color: #e07a00;
+        }
+
+        #upgradesWindow, #clickersGuideWindow, #themesWindow {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100vw; /* Start off-screen */
+            background: #fff;
+            color: #333;
+            padding: 20px;
+            width: 100vw; /* Fill the entire right side */
+            height: 100vh; /* Full height */
+            overflow-y: auto; /* Allow scrolling */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: right 0.3s ease-in-out; /* Smooth sliding effect */
+            z-index: 1000;
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        #closeUpgradesButton, #closeGuideButton, #closeThemesButton {
+            background-color: #ff4d4d;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        #closeUpgradesButton:hover, #closeGuideButton:hover, #closeThemesButton:hover {
+            background-color: #e43f3f;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .upgradeText {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .upgradeText p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .upgradeText span {
+            font-weight: bold;
+            color: #2575fc;
+        }
+
+        .guideText {
+            font-size: 18px;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .guideText p {
+            color: #666;
+        }
+
+        .themesOption {
+            margin: 15px 0;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .themesOption:hover {
+            color: #ff8c00;
+            font-weight: bold;
+        }
+
+        #message {
+            display: none;
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 30px;
+            color: white;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        .success {
+            background-color: green;
+        }
+
+        .error {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="coins">Coins: 0</div>
+    <div id="score">Score: 0</div>
+    <div id="rebirths">Rebirths: 0</div>
+    <div id="scoreIncrement">+1</div>
+    <button class="button" id="clickButton">+1 Click</button>
+    <button id="upgradesButton" class="button">Upgrades</button>
+    <button id="rebirthButton" class="button">Rebirth</button>
+    <button id="clickersGuideButton" class="guideButton">Clicker's Guide</button>
+    <button id="themesButton" class="themesButton">Themes</button>
+
+    <div id="overlay"></div>
+
+    <!-- Upgrades Window -->
+    <div id="upgradesWindow">
+        <h2>Upgrades</h2>
+        <div class="upgradeText">
+            <p>Upgrade 1: <span>Increase Coins per 10 clicks</span> - Cost: 10 Coins</p>
+            <button class="upgradeButton" id="upgrade1Button">Buy</button>
+        </div>
+        <div class="upgradeText">
+            <p>Upgrade 2: <span>Increase Points per Click</span> - Cost: 20 Coins</p>
+            <button class="upgradeButton" id="upgrade2Button">Buy</button>
+        </div>
+        <div class="upgradeText">
+            <p>Upgrade 3: <span>Auto Clicker (1 point per second)</span> - Cost: 30 Coins</p>
+            <button class="upgradeButton" id="upgrade3Button">Buy</button>
+        </div>
+        <div class="upgradeText">
+            <p>Upgrade 4: <span>Triple Score per Click</span> - Cost: 50 Coins</p>
+            <button class="upgradeButton" id="upgrade4Button">Buy</button>
+        </div>
+        <button id="closeUpgradesButton">Close</button>
+    </div>
+
+    <!-- Clicker's Guide Window -->
+    <div id="clickersGuideWindow">
+        <h2>Clicker's Guide</h2>
+        <div class="guideText">
+            <p>Welcome to the Clicker Game! Here's how to play:</p>
+            <ul>
+                <li>Click the "+1 Click" button to increase your score.</li>
+                <li>Earn coins every 10 clicks.</li>
+                <li>Use coins to purchase upgrades to increase your efficiency.</li>
+                <li>When you're ready, use the "Rebirth" button to reset your progress but earn a rebirth point.</li>
+            </ul>
+            <p>Happy Clicking!</p>
+        </div>
+        <button id="closeGuideButton">Close</button>
+    </div>
+
+    <!-- Themes Window -->
+    <div id="themesWindow">
+        <h2>Select Theme</h2>
+        <div class="themesOption" onclick="changeTheme('light')">Light Theme (Cost: 1 Rebirth)</div>
+        <div class="themesOption" onclick="changeTheme('dark')">Dark Theme (Cost: 1 Rebirth)</div>
+        <div class="themesOption" onclick="changeTheme('retro')">Retro Theme (Cost: 1 Rebirth)</div>
+        <button id="closeThemesButton">Close</button>
+    </div>
+
+    <div id="message"></div>
+
+    <script>
+        let score = 0;
+        let coins = 0;
+        let rebirths = 0;
+        let coinMultiplier = 1;
+        let scoreMultiplier = 1;
+        let autoClickerLevel = 0;
+        let scoreTripleLevel = 1;
+        let clickIncrement = 1;
+
+        const buttonSound = new Audio("https://www.myinstants.com/media/sounds/mouse-click.mp3");
+        buttonSound.preload = "auto";
+        buttonSound.volume = 1.0;
+
+        function playButtonSound() {
+            buttonSound.currentTime = 1; // Reset sound to start
+            buttonSound.play();
+        }
+
+        // Add event listeners to play sound on click for all buttons
+        document.querySelectorAll(".button, .upgradeButton, .guideButton, .themesButton").forEach(button => {
+            button.addEventListener("mousedown", playButtonSound);
+        });
+
+        document.getElementById("clickButton").addEventListener("click", () => {
+            score += clickIncrement * scoreTripleLevel;
+            playButtonSound();
+            document.getElementById("score").textContent = "Score: " + score;
+
+            const scoreIncrement = document.getElementById("scoreIncrement");
+            scoreIncrement.style.opacity = 1;
+            setTimeout(() => {
+                scoreIncrement.style.opacity = 0;
+            }, 1000);
+
+            if (score % 10 === 0) {
+                coins += (5 * coinMultiplier);
+                document.getElementById("coins").textContent = "Coins: " + coins;
+            }
+        });
+
+        // Show upgrades window
+        document.getElementById("upgradesButton").addEventListener("click", () => {
+            document.getElementById("upgradesWindow").style.display = "block";
+            setTimeout(() => {
+                document.getElementById("upgradesWindow").style.right = '0';
+            }, 10);
+            document.getElementById("overlay").style.display = "block";
+        });
+
+        // Close upgrades window
+        document.getElementById("closeUpgradesButton").addEventListener("click", () => {
+            document.getElementById("upgradesWindow").style.right = '-100vw';
+            setTimeout(() => {
+                document.getElementById("upgradesWindow").style.display = "none";
+            }, 300);
+            document.getElementById("overlay").style.display = "none";
+        });
+
+        // Show Clicker's Guide window
+        document.getElementById("clickersGuideButton").addEventListener("click", () => {
+            document.getElementById("clickersGuideWindow").style.display = "block";
+            setTimeout(() => {
+                document.getElementById("clickersGuideWindow").style.right = '0';
+            }, 10);
+            document.getElementById("overlay").style.display = "block";
+        });
+
+        // Close Clicker's Guide window
+        document.getElementById("closeGuideButton").addEventListener("click", () => {
+            document.getElementById("clickersGuideWindow").style.right = '-100vw';
+            setTimeout(() => {
+                document.getElementById("clickersGuideWindow").style.display = "none";
+            }, 300);
+            document.getElementById("overlay").style.display = "none";
+        });
+
+        // Show Themes window
+        document.getElementById("themesButton").addEventListener("click", () => {
+            document.getElementById("themesWindow").style.display = "block";
+            setTimeout(() => {
+                document.getElementById("themesWindow").style.right = '0';
+            }, 10);
+            document.getElementById("overlay").style.display = "block";
+        });
+
+        // Close Themes window
+        document.getElementById("closeThemesButton").addEventListener("click", () => {
+            document.getElementById("themesWindow").style.right = '-100vw';
+            setTimeout(() => {
+                document.getElementById("themesWindow").style.display = "none";
+            }, 300);
+            document.getElementById("overlay").style.display = "none";
+        });
+
+        // Rebirth logic
+        document.getElementById("rebirthButton").addEventListener("click", () => {
+            if (coins >= 500) {
+                // Deduct coins for rebirth
+                coins -= 500;
+                rebirths += 1;
+
+                // Reset score after rebirth
+                score = 0;
+
+                // Update UI
+                document.getElementById("rebirths").textContent = "Rebirths: " + rebirths;
+                document.getElementById("score").textContent = "Score: " + score;
+                document.getElementById("coins").textContent = "Coins: " + coins;
+
+                showMessage("Rebirth successful! You now have " + rebirths + " rebirth(s).", "success");
+            } else {
+                showMessage("You need 500 coins to rebirth!", "error");
+            }
+        });
+
+        // Show feedback message
+        function showMessage(message, type) {
+            const messageElement = document.getElementById("message");
+            messageElement.textContent = message;
+            messageElement.className = type; // success or error
+            messageElement.style.display = "block";
+
+            // Automatically hide after 3 seconds
+            setTimeout(() => {
+                messageElement.style.display = "none";
+            }, 3000);
+        }
+    </script>
+
+</body>
+</html>
